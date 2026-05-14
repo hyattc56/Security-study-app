@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Icon Generator</title>
+</head>
+<body>
+<h2>Security+ Sentinel Icon Generator</h2>
+<p>This page will generate PNG icons from the SVG files.</p>
+
+<div>
+  <h3>192x192 Icon</h3>
+  <canvas id="canvas192" width="192" height="192"></canvas>
+  <br><button onclick="download192()">Download icon-192.png</button>
+</div>
+
+<div>
+  <h3>512x512 Icon</h3>
+  <canvas id="canvas512" width="512" height="512"></canvas>
+  <br><button onclick="download512()">Download icon-512.png</button>
+</div>
+
+<script>
+// 192x192 icon
+const svg192 = `<svg width="192" height="192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c5cff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4f9bff;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="42" fill="url(#grad)"/>
+  <path d="M96 154s48-24 48-60V58l-48-18-48 18v36c0 36 48 60 48 60z" fill="none" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M78 96l12 12 24-24" fill="none" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+// 512x512 icon
+const svg512 = `<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c5cff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4f9bff;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#grad2)"/>
+  <path d="M256 410s128-64 128-160V154l-128-48-128 48v96c0 96 128 160 128 160z" fill="none" stroke="white" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M208 256l32 32 64-64" fill="none" stroke="white" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+function svgToCanvas(svgString, canvas) {
+  const ctx = canvas.getContext('2d');
+  const img = new Image();
+  const blob = new Blob([svgString], {type: 'image/svg+xml'});
+  const url = URL.createObjectURL(blob);
+  
+  img.onload = function() {
+    ctx.drawImage(img, 0, 0);
+    URL.revokeObjectURL(url);
+  };
+  
+  img.src = url;
+}
+
+svgToCanvas(svg192, document.getElementById('canvas192'));
+svgToCanvas(svg512, document.getElementById('canvas512'));
+
+function download192() {
+  const canvas = document.getElementById('canvas192');
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'icon-192.png';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
+
+function download512() {
+  const canvas = document.getElementById('canvas512');
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'icon-512.png';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
+</script>
+</body>
+</html>
