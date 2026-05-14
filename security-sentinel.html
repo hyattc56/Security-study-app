@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security+ Sentinel</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c10;
+    --surface: #0d1117;
+    --surface2: #161b22;
+    --border: #21262d;
+    --accent: #00ff88;
+    --accent2: #0096ff;
+    --accent3: #ff6b35;
+    --warn: #ffd700;
+    --text: #e6edf3;
+    --muted: #7d8590;
+    --danger: #ff4757;
+    --glow: 0 0 20px rgba(0,255,136,0.3);
+    --glow2: 0 0 20px rgba(0,150,255,0.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* Grid bg */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Header */
+  .header {
+    position: relative;
+    z-index: 10;
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(13,17,23,0.95);
+    backdrop-filter: blur(10px);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-icon {
+    width: 42px;
+    height: 42px;
+    border: 2px solid var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--glow);
+    animation: pulse-border 3s infinite;
+  }
+
+  @keyframes pulse-border {
+    0%, 100% { box-shadow: 0 0 10px rgba(0,255,136,0.3); }
+    50% { box-shadow: 0 0 25px rgba(0,255,136,0.6), 0 0 50px rgba(0,255,136,0.2); }
+  }
+
+  .logo-icon svg { width: 22px; height: 22px; }
+
+  .logo-text h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px rgba(0,255,136,0.5);
+    line-height: 1;
+  }
+
+  .logo-text span {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 3px;
+  }
+
+  .badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    padding: 4px 12px;
+    border: 1px solid var(--accent2);
+    border-radius: 4px;
+    color: var(--accent2);
+    letter-spacing: 1px;
+    box-shadow: 0 0 10px rgba(0,150,255,0.2);
+  }
+
+  /* Main layout */
+  .main {
+    position: relative;
+    z-index: 10;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  /* Mode selector */
+  .mode-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .mode-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mode-btn:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  .mode-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,255,136,0.05);
+    box-shadow: 0 0 15px rgba(0,255,136,0.15);
+  }
+
+  .mode-btn .mode-icon {
+    font-size: 22px;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  /* Input area */
+  .input-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+  }
+
+  .input-group {
+    flex: 1;
+  }
+
+  .input-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .topic-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .topic-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,255,136,0.1);
+  }
+
+  .topic-input::placeholder { color: var(--muted); }
+
+  .count-select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+    min-width: 140px;
+  }
+
+  .count-select:focus { border-color: var(--accent); }
+
+  .generate-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 28px;
+    font-family: 'Orbitron', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    box-shadow: 0 0 15px rgba(0,255,136,0.3);
+  }
+
+  .generate-btn:hover {
+    background: #00ffaa;
+    box-shadow: 0 0 25px rgba(0,255,136,0.5);
+    transform: translateY(-1px);
+  }
+
+  .generate-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Output area */
+  .output-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    min-height: 300px;
+    overflow: hidden;
+  }
+
+  .output-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+  }
+
+  .output-header .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+
+  .dot-green { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .dot-blue { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
+  .dot-orange { background: var(--accent3); box-shadow: 0 0 6px var(--accent3); }
+
+  .output-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    flex: 1;
+  }
+
+  .output-body {
+    padding: 24px;
+  }
+
+  /* Empty state */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--muted);
+  }
+
+  .empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.4;
+  }
+
+  .empty-state p {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 1px;
+    line-height: 1.8;
+  }
+
+  /* Loading */
+  .loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 20px;
+  }
+
+  .loading-bar {
+    width: 200px;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .loading-bar::after {
+    content: '';
+    display: block;
+    height: 100%;
+    width: 40%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+    border-radius: 2px;
+    animation: scan 1.2s ease-in-out infinite;
+  }
+
+  @keyframes scan {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(350%); }
+  }
+
+  .loading-text {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Flashcard table */
+  .flashcard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .flashcard-table th {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    text-align: left;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,255,136,0.04);
+  }
+
+  .flashcard-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(33,38,45,0.6);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+
+  .flashcard-table tr:last-child td { border-bottom: none; }
+
+  .flashcard-table tr:hover td {
+    background: rgba(0,255,136,0.03);
+  }
+
+  .flashcard-table .term {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    color: var(--accent2);
+    font-weight: bold;
+    width: 35%;
+  }
+
+  .flashcard-table .def {
+    color: var(--text);
+    font-size: 13px;
+  }
+
+  /* Cheat sheet */
+  .cheat-sheet h2 {
+    font-family: 'Orbitron', monospace;
+    font-size: 16px;
+    color: var(--accent);
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    text-shadow: 0 0 15px rgba(0,255,136,0.4);
+  }
+
+  .cheat-sheet h3 {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--accent2);
+    margin: 20px 0 10px;
+    text-transform: uppercase;
+  }
+
+  .cheat-sheet p {
+    font-size: 14px;
+    line-height: 1.75;
+    color: #c9d1d9;
+    margin-bottom: 10px;
+  }
+
+  .cheat-sheet strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .cheat-sheet ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 12px;
+  }
+
+  .cheat-sheet ul li {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #c9d1d9;
+    padding: 4px 0 4px 20px;
+    position: relative;
+  }
+
+  .cheat-sheet ul li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+  }
+
+  .pro-tip {
+    background: linear-gradient(135deg, rgba(255,215,0,0.07), rgba(255,107,53,0.05));
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-top: 20px;
+  }
+
+  .pro-tip .tip-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--warn);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pro-tip p {
+    font-size: 13px;
+    color: #e2cc77;
+    margin: 0;
+    line-height: 1.7;
+  }
+
+  /* Quiz */
+  .quiz-container { display: flex; flex-direction: column; gap: 24px; }
+
+  .question-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+
+  .question-meta {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .q-num {
+    color: var(--accent);
+    font-weight: bold;
+  }
+
+  .q-text {
+    font-size: 14px;
+    line-height: 1.65;
+    margin-bottom: 16px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+
+  .option-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 16px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 13px;
+    color: var(--text);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.5;
+  }
+
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--accent2);
+    background: rgba(0,150,255,0.05);
+  }
+
+  .option-btn .opt-letter {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    min-width: 18px;
+    font-weight: bold;
+  }
+
+  .option-btn.correct {
+    border-color: var(--accent);
+    background: rgba(0,255,136,0.08);
+    color: var(--accent);
+  }
+
+  .option-btn.correct .opt-letter { color: var(--accent); }
+
+  .option-btn.wrong {
+    border-color: var(--danger);
+    background: rgba(255,71,87,0.08);
+    color: var(--danger);
+  }
+
+  .option-btn.wrong .opt-letter { color: var(--danger); }
+
+  .option-btn:disabled { cursor: default; }
+
+  .feedback-box {
+    display: none;
+    background: rgba(0,0,0,0.3);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 16px;
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #c9d1d9;
+  }
+
+  .feedback-box.show { display: block; animation: fadeIn 0.3s ease; }
+
+  .feedback-box .fb-correct {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .feedback-box .fb-wrong {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--danger);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Score summary */
+  .score-summary {
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(0,255,136,0.1);
+  }
+
+  .score-summary h3 {
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+
+  .score-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 48px;
+    font-weight: 900;
+    color: var(--accent);
+    text-shadow: 0 0 30px rgba(0,255,136,0.5);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .score-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  .score-msg {
+    margin-top: 16px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* Markdown-like rendering */
+  .md-content strong { color: var(--text); font-weight: 600; }
+
+  /* Error */
+  .error-msg {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: rgba(255,71,87,0.08);
+    border: 1px solid rgba(255,71,87,0.3);
+    border-radius: 8px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    color: var(--danger);
+  }
+
+  /* Footer note */
+  .footnote {
+    text-align: center;
+    margin-top: 24px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    opacity: 0.5;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .header { padding: 16px; }
+    .input-row { flex-direction: column; }
+    .count-select { min-width: auto; }
+    .mode-btn { padding: 12px 8px; font-size: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <path d="M9 12l2 2 4-4"/>
+      </svg>
+    </div>
+    <div class="logo-text">
+      <h1>SECURITY+ SENTINEL</h1>
+      <span>SY0-701 STUDY SYSTEM</span>
+    </div>
+  </div>
+  <div class="badge">AI-POWERED</div>
+</header>
+
+<main class="main">
+
+  <div class="mode-selector">
+    <button class="mode-btn active" data-mode="flashcards">
+      <span class="mode-icon">🗂️</span>
+      FLASHCARDS
+    </button>
+    <button class="mode-btn" data-mode="cheatsheet">
+      <span class="mode-icon">📋</span>
+      CHEAT SHEET
+    </button>
+    <button class="mode-btn" data-mode="quiz">
+      <span class="mode-icon">🎯</span>
+      QUIZ MODE
+    </button>
+  </div>
+
+  <div class="input-panel">
+    <div class="input-row">
+      <div class="input-group">
+        <label class="input-label">// ENTER TOPIC OR DOMAIN</label>
+        <input
+          class="topic-input"
+          id="topicInput"
+          type="text"
+          placeholder="e.g. PKI, Zero Trust, MFA, Incident Response, SIEM..."
+          autocomplete="off"
+        />
+      </div>
+      <div id="countGroup" style="display:none;">
+        <label class="input-label">// QUESTIONS</label>
+        <select class="count-select" id="countSelect">
+          <option value="5">5 questions</option>
+          <option value="10">10 questions</option>
+          <option value="15">15 questions</option>
+          <option value="20">20 questions</option>
+        </select>
+      </div>
+      <button class="generate-btn" id="generateBtn" onclick="generate()">
+        ▶ GENERATE
+      </button>
+    </div>
+  </div>
+
+  <div class="output-panel">
+    <div class="output-header">
+      <div class="dot dot-green"></div>
+      <div class="dot dot-blue"></div>
+      <div class="dot dot-orange"></div>
+      <span class="output-title" id="outputTitle">// AWAITING INPUT</span>
+    </div>
+    <div class="output-body" id="outputBody">
+      <div class="empty-state">
+        <div class="empty-icon">🛡️</div>
+        <p>SELECT A MODE ABOVE<br>ENTER A SECURITY+ TOPIC<br>HIT GENERATE TO BEGIN</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="footnote">SOURCES: CompTIA SY0-701 · NIST SP 800-53 · ISO/IEC 27001 · OWASP TOP 10</p>
+
+</main>
+
+<script>
+  let currentMode = 'flashcards';
+  let quizState = { answers: {}, total: 0, questions: [] };
+
+  // Mode switching
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentMode = btn.dataset.mode;
+      document.getElementById('countGroup').style.display = currentMode === 'quiz' ? 'block' : 'none';
+      document.getElementById('outputTitle').textContent = '// AWAITING INPUT';
+      document.getElementById('outputBody').innerHTML = `<div class="empty-state"><div class="empty-icon">🛡️</div><p>TOPIC ENTERED · READY TO GENERATE</p></div>`;
+    });
+  });
+
+  document.getElementById('topicInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') generate();
+  });
+
+  function setLoading(mode) {
+    const labels = { flashcards: 'GENERATING FLASHCARDS', cheatsheet: 'COMPILING CHEAT SHEET', quiz: 'BUILDING QUIZ' };
+    document.getElementById('outputTitle').textContent = `// ${labels[mode]}...`;
+    document.getElementById('outputBody').innerHTML = `
+      <div class="loading">
+        <div class="loading-bar"></div>
+        <div class="loading-text">SCANNING KNOWLEDGE BASE...</div>
+      </div>`;
+  }
+
+  function setError(msg) {
+    document.getElementById('outputTitle').textContent = '// ERROR';
+    document.getElementById('outputBody').innerHTML = `
+      <div class="output-body">
+        <div class="error-msg">⚠ ${msg}</div>
+      </div>`;
+  }
+
+  async function callClaude(systemPrompt, userPrompt) {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userPrompt }]
+      })
+    });
+    if (!res.ok) throw new Error(`API error ${res.status}`);
+    const data = await res.json();
+    return data.content[0].text;
+  }
+
+  async function generate() {
+    const topic = document.getElementById('topicInput').value.trim();
+    if (!topic) {
+      document.getElementById('topicInput').focus();
+      return;
+    }
+    const btn = document.getElementById('generateBtn');
+    btn.disabled = true;
+    setLoading(currentMode);
+
+    try {
+      if (currentMode === 'flashcards') await generateFlashcards(topic);
+      else if (currentMode === 'cheatsheet') await generateCheatSheet(topic);
+      else await generateQuiz(topic);
+    } catch(e) {
+      setError('Generation failed. Check your connection and try again.');
+      console.error(e);
+    }
+    btn.disabled = false;
+  }
+
+  async function generateFlashcards(topic) {
+    const system = `You are an expert CompTIA Security+ (SY0-701) instructor. Respond ONLY with valid JSON, no markdown, no backticks. Base content on CompTIA SY0-701 objectives, NIST SP 800-53, ISO/IEC 27001, and OWASP Top 10. JSON format: {"topic": "string", "cards": [{"front": "Term or Concept", "back": "Concise definition, function, or key facts. Max 2 sentences."}]}. Generate 10-15 cards covering key terms, acronyms, protocols, attack types, and controls related to the topic.`;
+    const raw = await callClaude(system, `Generate Security+ flashcards for: ${topic}`);
+    const data = JSON.parse(raw.replace(/```json|```/g, '').trim());
+
+    document.getElementById('outputTitle').textContent = `// FLASHCARDS — ${data.topic.toUpperCase()}`;
+    const rows = data.cards.map((c, i) => `
+      <tr>
+        <td class="term">${escHtml(c.front)}</td>
+        <td class="def">${escHtml(c.back)}</td>
+      </tr>`).join('');
+    document.getElementById('outputBody').innerHTML = `
+      <table class="flashcard-table">
+        <thead><tr><th>▸ TERM / CONCEPT</th><th>▸ DEFINITION / FUNCTION</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+
+  async function generateCheatSheet(topic) {
+    const system = `You are an expert CompTIA Security+ (SY0-701) instructor. Respond ONLY with valid JSON, no markdown backticks. Base content on CompTIA SY0-701 objectives, NIST SP 800-53, ISO/IEC 27001, and OWASP Top 10. Return JSON: {"topic":"string","summary":"2-3 sentence overview","key_concepts":[{"name":"string","detail":"string"}],"exam_tips":["string"],"pro_tip":{"mnemonic":"string or null","analogy":"string or null","exam_watch":"string - phrase like: If the question mentions X look for Y in the answers"}}. Generate 4-7 key concepts. Make pro_tip genuinely useful and memorable.`;
+    const raw = await callClaude(system, `Generate Security+ cheat sheet for: ${topic}`);
+    const d = JSON.parse(raw.replace(/```json|```/g, '').trim());
+
+    document.getElementById('outputTitle').textContent = `// CHEAT SHEET — ${d.topic.toUpperCase()}`;
+
+    const concepts = d.key_concepts.map(c => `<li><strong>${escHtml(c.name)}:</strong> ${escHtml(c.detail)}</li>`).join('');
+    const tips = d.exam_tips.map(t => `<li>${escHtml(t)}</li>`).join('');
+
+    let proTipHtml = '';
+    const pt = d.pro_tip;
+    if (pt.mnemonic) proTipHtml += `<p><strong>🧠 Mnemonic:</strong> ${escHtml(pt.mnemonic)}</p>`;
+    if (pt.analogy) proTipHtml += `<p><strong>🔗 Analogy:</strong> ${escHtml(pt.analogy)}</p>`;
+    if (pt.exam_watch) proTipHtml += `<p><strong>👁 Exam Watch:</strong> ${escHtml(pt.exam_watch)}</p>`;
+
+    document.getElementById('outputBody').innerHTML = `
+      <div class="cheat-sheet">
+        <h2>🛡 ${escHtml(d.topic)}</h2>
+        <p>${escHtml(d.summary)}</p>
+        <h3>KEY CONCEPTS</h3>
+        <ul>${concepts}</ul>
+        <h3>EXAM TIPS</h3>
+        <ul>${tips}</ul>
+        <div class="pro-tip">
+          <div class="tip-label">⚡ PRO-TIP FOR MEMORY</div>
+          ${proTipHtml}
+        </div>
+      </div>`;
+  }
+
+  async function generateQuiz(topic) {
+    const count = parseInt(document.getElementById('countSelect').value);
+    const system = `You are an expert CompTIA Security+ (SY0-701) instructor. Respond ONLY with valid JSON, no markdown backticks. Base content on CompTIA SY0-701, NIST, OWASP. Return JSON: {"topic":"string","questions":[{"id":1,"text":"Situational question text","options":["A. text","B. text","C. text","D. text"],"correct":"A","explanation":"Why correct answer is right. Then briefly note why the distractors are wrong."}]}. Questions MUST be situational CompTIA-style 'best answer' format — not simple definition recall. Make distractors plausible.`;
+    const raw = await callClaude(system, `Generate exactly ${count} Security+ SY0-701 quiz questions about: ${topic}`);
+    const data = JSON.parse(raw.replace(/```json|```/g, '').trim());
+
+    quizState = { answers: {}, total: data.questions.length, questions: data.questions };
+    document.getElementById('outputTitle').textContent = `// QUIZ — ${data.topic.toUpperCase()} (${count}Q)`;
+
+    const cards = data.questions.map((q, i) => `
+      <div class="question-card" id="qcard-${i}">
+        <div class="question-meta">
+          <span class="q-num">Q${i+1}</span>
+          <span>·</span>
+          <span>SY0-701</span>
+          <span>·</span>
+          <span>BEST ANSWER</span>
+        </div>
+        <div class="q-text">${escHtml(q.text)}</div>
+        <div class="options" id="opts-${i}">
+          ${q.options.map((opt, j) => {
+            const letter = opt.charAt(0);
+            const text = opt.substring(2).trim();
+            return `<button class="option-btn" onclick="selectAnswer(${i}, '${letter}')" id="opt-${i}-${letter}">
+              <span class="opt-letter">${letter}.</span>
+              <span>${escHtml(text)}</span>
+            </button>`;
+          }).join('')}
+        </div>
+        <div class="feedback-box" id="fb-${i}">
+          <div id="fb-label-${i}"></div>
+          <div id="fb-text-${i}"></div>
+        </div>
+      </div>`).join('');
+
+    document.getElementById('outputBody').innerHTML = `
+      <div class="quiz-container">
+        ${cards}
+        <div id="scoreSummary" style="display:none;"></div>
+      </div>`;
+  }
+
+  function selectAnswer(qIdx, chosen) {
+    if (quizState.answers[qIdx] !== undefined) return;
+    const q = quizState.questions[qIdx];
+    quizState.answers[qIdx] = chosen;
+
+    // Disable all options
+    q.options.forEach(opt => {
+      const btn = document.getElementById(`opt-${qIdx}-${opt.charAt(0)}`);
+      if (btn) btn.disabled = true;
+    });
+
+    // Highlight correct/wrong
+    const correctBtn = document.getElementById(`opt-${qIdx}-${q.correct}`);
+    const chosenBtn = document.getElementById(`opt-${qIdx}-${chosen}`);
+    if (correctBtn) correctBtn.classList.add('correct');
+    if (chosen !== q.correct && chosenBtn) chosenBtn.classList.add('wrong');
+
+    // Show feedback
+    const fb = document.getElementById(`fb-${qIdx}`);
+    const fbLabel = document.getElementById(`fb-label-${qIdx}`);
+    const fbText = document.getElementById(`fb-text-${qIdx}`);
+    const isCorrect = chosen === q.correct;
+    fbLabel.className = isCorrect ? 'fb-correct' : 'fb-wrong';
+    fbLabel.textContent = isCorrect ? '✓ CORRECT' : `✗ INCORRECT — CORRECT: ${q.correct}`;
+    fbText.textContent = q.explanation;
+    fb.classList.add('show');
+
+    // Check if all answered
+    if (Object.keys(quizState.answers).length === quizState.total) {
+      setTimeout(showScore, 600);
+    }
+  }
+
+  function showScore() {
+    const correct = Object.entries(quizState.answers).filter(([i, a]) => a === quizState.questions[i].correct).length;
+    const pct = Math.round((correct / quizState.total) * 100);
+    let msg = pct >= 80 ? '🎯 Excellent! You\'re well above passing threshold.' :
+              pct >= 70 ? '✅ Solid — passing threshold is 750/900. Keep drilling weak areas.' :
+              '📚 Below passing. Focus on the explanations above and revisit this domain.';
+    const summary = document.getElementById('scoreSummary');
+    summary.innerHTML = `
+      <div class="score-summary">
+        <h3>FINAL SCORE</h3>
+        <div class="score-num">${pct}%</div>
+        <div class="score-label">${correct} / ${quizState.total} CORRECT</div>
+        <div class="score-msg">${msg}</div>
+      </div>`;
+    summary.style.display = 'block';
+    summary.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>
